@@ -84,15 +84,16 @@ After computing the mechanical score, apply a minimum floor if the finding's `ru
 
 | Rule pattern | Floor | Class rationale |
 |---|---|---|
-| `*.pii-log*`, `*.pan-at-log*`, `*.pii-*`, `*.pii-in-response*` | 7 | PCI-DSS §3.4 / §10.2 and GDPR Art 32 violations by mere presence. Compliance-grade CRITICAL regardless of local-only mechanics. |
-| `*.tls-disabled*`, `*.node-tls-reject-unauthorized`, `*.python-verify-false`, `*.insecure-tls*` | 7 | MITM-enabling class. Cascades to credential theft, request/response tampering, and downstream bypass. |
-| `*.non-aead-cipher`, `*.weak-hash*`, `*.md5-for-integrity`, `*.weak-cipher*`, `*.deprecated-crypto*` | 6 | Broken or deprecated cryptographic primitives. Enable padding-oracle, collision, and downgrade attacks. |
-| `*.hardcoded-*`, `gitleaks.secrets.*`, `entropy-check.secrets.*`, `*.shared-credential`, `*.cross-env-reuse` | 7 | Direct credential exposure. Attacker utility is immediate; cascades through cred-reuse chains. |
-| `fraud-domain.fail-open*`, `business-logic.fraud.fail-open*`, `*.fail-open-scoring` | 8 | Direct fraud bypass — the finding IS the exploit. CRITICAL class. |
-| `fraud-domain.emulation-mode*`, `business-logic.fraud.emulation*` | 7 | Production short-circuit of fraud scoring via env var or header. |
-| `fraud-domain.client-controlled-aggregate*`, `business-logic.fraud.feature-poisoning` | 7 | Attacker controls features the model trusts. Direct scoring manipulation. |
-| `*.unauth*endpoint*`, `*.missing-auth*`, `*.unauthenticated-*` on paths matching `/admin*`, `/internal*`, `/actuator*`, `/metrics*`, `/management*`, `/predict*`, `/score*` | 7 | Auth bypass on privileged or decision-making surface. |
-| `*.tokenization-skip*`, `*.pan-bypass*` | 8 | Tokenization / PII-masking disabled — direct PCI-DSS §3.4 violation with a bypass path. |
+| `*.pii-log*`, `*.pan-at-log*`, `*.pii-*`, `*.pii-in-response*` | 7 | PCI-DSS §3.4 / §10.2 and GDPR Art 32 violations by mere presence. HIGH-class — DEBUG-level PAN logging is significant but not "immediate exploitation with no prerequisites" (requires log access). Compare to reference `S04-FS-01` (DEBUG/PAN logging → HIGH). |
+| `*.tls-disabled*`, `*.node-tls-reject-unauthorized`, `*.python-verify-false`, `*.insecure-tls*` | 7 | MITM-enabling class — HIGH (not CRITICAL). Cascades to credential theft if positioned, but exploitation requires MITM staging. Reference `S07-AG-01 / X-06` was downgraded from CRITICAL to HIGH on cross-repo consolidation: "TLS verification disabled" is HIGH unless a specific exploit chain promotes it. |
+| `*.non-aead-cipher`, `*.weak-hash*`, `*.md5-for-integrity`, `*.weak-cipher*`, `*.deprecated-crypto*` | 6 | Broken or deprecated cryptographic primitives. HIGH class. Padding-oracle/collision/downgrade attacks require specific exploitation paths. |
+| `*.hardcoded-*`, `gitleaks.secrets.*`, `entropy-check.secrets.*`, `*.shared-credential`, `*.cross-env-reuse` | 9 | Direct credential exposure in production-reachable config. Floor 9 → CRITICAL. Reference: AWS production keys (S01-FS-01) and shared JWT secret (X-01) are CRITICAL. **Discriminator**: dev/test-only fallbacks (`fallback-secret-for-dev` style — reference S01-AG-03) should be assigned floor=7 (HIGH) via the rationale convention `<class> floor=7 (dev-only-fallback)`. |
+| `fraud-domain.fail-open*`, `business-logic.fraud.fail-open*`, `*.fail-open-scoring` | 9 | Direct fraud bypass on every request — the finding IS the exploit. CRITICAL. Reference: `S03-FS-01` (fail-open on scorer exception) → CRITICAL. |
+| `fraud-domain.emulation-mode*`, `business-logic.fraud.emulation*` | 9 | Production short-circuit of fraud scoring via env var or header without allowlist. CRITICAL. Reference: `S03-FS-02` (EMULATION_MODE) → CRITICAL. |
+| `fraud-domain.client-controlled-aggregate*`, `business-logic.fraud.feature-poisoning` | 9 | Attacker controls features the model trusts on every `/predict`. CRITICAL. Reference: `S03-FS-03/04` (`velocity_24h`, `count_last_1h`) → CRITICAL. |
+| `*.unauth*endpoint*`, `*.missing-auth*`, `*.unauthenticated-*` on paths matching `/admin*` enabling **direct privilege escalation, model swap, cache flush, token mint, or fraud bypass** | 9 | Auth bypass with **direct** privileged action. CRITICAL. Reference: `S02-FS-01` (unauth `/admin/reload-model`) and `S02-AG-01` (unauth admin-token mint) → CRITICAL. |
+| `*.unauth*endpoint*`, `*.missing-auth*`, `*.unauthenticated-*` on paths matching `/actuator*`, `/metrics*`, `/management*`, `/predict*`, `/score*` (info disclosure or DoS without direct privilege escalation) | 7 | Auth bypass on privileged surface, but not direct privilege escalation. HIGH. Reference: `S02-FS-02` (`/actuator/heap`) and `S02-FS-03` (`/predict`) → HIGH (calibration: "unauth admin endpoint = CRITICAL when privilege escalation, HIGH otherwise"). |
+| `*.tokenization-skip*`, `*.pan-bypass*` | 9 | Tokenization / PII-masking disabled — direct PCI-DSS §3.4 violation with a bypass path. CRITICAL. |
 
 **Semantics**: final exploitability = `max(mechanical_score, floor_for_rule_id)`. Floor lookup is a first-match fnmatch against the patterns above; first-match-wins. A rule not matching any pattern retains its mechanical score.
 
@@ -103,6 +104,8 @@ After computing the mechanical score, apply a minimum floor if the finding's `ru
 This makes the calibration decision auditable per-finding.
 
 **Why domain floors exist**: the mechanical rubric rewards exploit mechanics (network-reachable, input-controlled, cascading) but understates findings whose severity derives from **compliance significance** or **industry-consensus class risk**. A `log.debug(pan)` isn't mechanically exploitable — yet it's a breach. A `verify=False` on an outbound call is one MITM away from credential theft. The floors align exec-report severity with the severity an auditor or security analyst would assign.
+
+**Calibration reference (2026-05-01)**: floors are calibrated against the `opus_repo_scan_test` reference framework (Anthropic public reference for fp-reduction), where CRITICAL is reserved for "exploitable immediately with no prerequisites; leads to data breach or fraud bypass." Score >= 9 → CRITICAL; score 6-8 → HIGH; score 3-5 → MEDIUM; score 0-2 → LOW. Earlier floors that pushed all hardcoded-creds and unauth-admin to floor 7 produced an inverted CRITICAL/HIGH pyramid; tightening to floor 9 only for direct-impact classes (production credential exposure, fail-open fraud, direct privilege escalation) restores the proper distribution.
 
 **Why floors don't over-call production noise**:
 
