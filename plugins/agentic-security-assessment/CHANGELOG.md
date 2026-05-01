@@ -1,5 +1,22 @@
 # Changelog
 
+## [2.2.0](https://github.com/bdfinst/agentic-dev-team/compare/agentic-security-assessment-v2.1.0...agentic-security-assessment-v2.2.0) (2026-05-01)
+
+
+### Features
+
+* **security-assessment:** add Stage 0 devil's advocate + confidence field to fp-reduction ([89b34e1](https://github.com/bdfinst/agentic-dev-team/commit/89b34e15b734ef7a2eabbdac7bb3c89790a0db9c))
+* **security-assessment:** expand Phase 1b with 3 new judgment agents ([9dad5ee](https://github.com/bdfinst/agentic-dev-team/commit/9dad5ee6f1adabf7d376b12b02969f8cf291f2f8))
+* **security-assessment:** Phase 1b expansion + fp-reduction Stage 0/confidence (v2.2.0) ([4e77037](https://github.com/bdfinst/agentic-dev-team/commit/4e7703795f383690fa974df54dac9cbed29bd1bb))
+* **security-assessment:** recalibrate CRITICAL threshold against opus_repo_scan_test reference ([0c221cb](https://github.com/bdfinst/agentic-dev-team/commit/0c221cb037d779e345a6ede320682c0bb2eff957))
+* **security-assessment:** recalibrate CRITICAL threshold against opus_repo_scan_test reference (v2.3.0) ([7a3c320](https://github.com/bdfinst/agentic-dev-team/commit/7a3c3201c73c2adcc2ba69bcd10003d6bc803718))
+
+
+### Miscellaneous
+
+* **security-assessment:** release 2.2.0 ([6296245](https://github.com/bdfinst/agentic-dev-team/commit/6296245eee29da567314fd627c928103a1bb823f))
+* **security-assessment:** release 2.3.0 ([1d61422](https://github.com/bdfinst/agentic-dev-team/commit/1d614229f0b7d543bbfdccffb7067c181db49068))
+
 ## [2.3.0] (2026-05-01)
 
 
