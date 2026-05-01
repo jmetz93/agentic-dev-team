@@ -1,5 +1,19 @@
 # Changelog
 
+## [2.3.0] (2026-05-01)
+
+
+### Features
+
+* **security-assessment:** recalibrate severity scoring against opus_repo_scan_test reference framework. CRITICAL is now reserved for findings exploitable immediately with no prerequisites that lead to data breach or fraud bypass (`score >= 9`). HIGH covers exploitable-with-moderate-effort issues (`score 6-8`). Earlier threshold of `score >= 7 → CRITICAL` combined with broad domain-class floors at 7 produced an inverted CRITICAL/HIGH pyramid (e.g. NextGen 198C/95H, Walletron 307C/10H). The recalibrated thresholds restore the proper distribution where HIGH > CRITICAL — validated against the reference's published 7C/12H/7M/3L example output.
+* **security-assessment:** introduce discriminator-aware domain-class floors. `hardcoded-creds` floor=9 only when production-reachable; `dev-only-fallback` discriminator drops to 7 (HIGH). `unauth-admin-endpoint` floor=9 only when direct privilege escalation is enabled (model swap, token mint, cache flush, fraud bypass); `info-disclosure-only` discriminator drops to 7 (HIGH). New explicit floor=9 classes for `fail-open-scoring`, `emulation-bypass`, and `client-controlled-aggregate` matching reference S03-FS-01/02/03/04.
+
+
+### Documentation
+
+* **security-assessment:** `knowledge/severity-floors.json` adds `score_to_severity` thresholds and per-class `discriminator` fields. Each class rationale now cites the corresponding opus_repo_scan_test reference finding ID for audit traceability.
+* **security-assessment:** `agents/fp-reduction.md` floor table updated with reference-finding citations and discriminator guidance.
+
 ## [2.2.0] (2026-05-01)
 
 
