@@ -63,7 +63,7 @@ Wall time matters for real-world assessments. Three parallelism rules **MUST** b
 1. **Multi-target fan-out.** When invoked with multiple targets, each target's Phase 0 through Phase 2b runs as an **independent pipeline**. Dispatch them as **parallel Agent tool calls in the SAME message** — not sequential. Each target's pipeline is self-contained until Phase 4 (service-comm across targets) and Phase 5 (cross-repo summary). For N targets on a machine with K cores, expect N-way wall-time parallelism up to K.
 
 2. **Intra-phase fan-out.** Within a phase with multiple agents or tools:
-   - Phase 1b dispatches `security-review` AND `business-logic-domain-review` as parallel Agent tool calls in one message
+   - Phase 1b dispatches `security-review`, `business-logic-domain-review`, `deep-code-reasoning`, `authorization-logic-review`, AND `recon-driven-scan` as parallel Agent tool calls in one message
    - Phase 3 dispatches `tool-finding-narrative-annotator` AND `compliance-mapping` as parallel Agent tool calls in one message
    - Phase 1's static-analysis-integration skill dispatches every available tool (semgrep variants + gitleaks + trivy + hadolint + actionlint + custom scripts) as concurrent shell processes, not sequentially
 
@@ -111,11 +111,28 @@ Also invoke the two custom scripts:
 
 Their SARIF outputs flow through the shared parser.
 
-**Phase 1b — Judgment detection.** Dispatch in parallel (Agent tool with multiple calls in one message):
+**Phase 1b — Judgment detection.** Dispatch in parallel (Agent tool with five calls in one message):
 - `security-review` (opus; reads RECON + target files)
 - `business-logic-domain-review` (opus; reads RECON + target files + `knowledge/domain-logic-patterns.md`)
+- `deep-code-reasoning` (opus; reads RECON surface-scoped entry points, auth paths, and data-flow boundaries; emits `memory/deep-reasoning-<slug>.json`)
+- `authorization-logic-review` (opus; maps the authorization model top-down and checks enforcement consistency; emits `memory/authz-review-<slug>.json`)
+- `recon-driven-scan` (opus; reads the RECON narrative and validates each described risk has concrete `file:line` evidence in source — finds patterns SAST cannot express; emits `memory/recon-driven-<slug>.json`)
 
-Append their findings to `memory/findings-<slug>.jsonl`.
+After all five agents complete, append findings to `memory/findings-<slug>.jsonl`:
+
+```bash
+# security-review and business-logic-domain-review via adapter (mandatory)
+python3 plugins/agentic-dev-team/skills/static-analysis-integration/adapters/security-review-adapter.py \
+  --input memory/agent-output-<slug>.json \
+  --output memory/findings-<slug>.jsonl
+
+# deep-code-reasoning, authorization-logic-review, and recon-driven-scan emit unified-finding-v1 directly
+jq -c '.[]' memory/deep-reasoning-<slug>.json >> memory/findings-<slug>.jsonl
+jq -c '.[]' memory/authz-review-<slug>.json   >> memory/findings-<slug>.jsonl
+jq -c '.[]' memory/recon-driven-<slug>.json   >> memory/findings-<slug>.jsonl
+```
+
+If any of `deep-reasoning-<slug>.json`, `authz-review-<slug>.json`, or `recon-driven-<slug>.json` is missing (agent failed), log the failure to the audit trail and continue — Phase 1b is best-effort for individual agents. `recon-driven-scan` legitimately emits `[]` when the RECON narrative is empty or generic; this is not a failure. If multiple new agents fail, surface a coverage warning in the final report.
 
 **Phase 1c — ACCEPTED-RISKS suppression (deterministic, mandatory gate).** Execute the deterministic script; do not delegate this to LLM reasoning:
 
