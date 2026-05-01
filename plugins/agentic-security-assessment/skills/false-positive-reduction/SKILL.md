@@ -18,9 +18,30 @@ Transform a stream of unified findings into a disposition register that the exec
 
 The skill's job is to remove noise without suppressing real issues. False positives waste analyst attention; missed true positives get someone fired.
 
-## Five-stage rubric (applied in order; each stage can downgrade severity or change verdict)
+## Six-stage rubric (applied in order; each stage can downgrade severity or change verdict)
 
-Lifted from the `opus_repo_scan_test` reference's § analyze-11 framework with extensions for the disposition-register output format.
+Lifted from the `opus_repo_scan_test` reference's § analyze-11 framework with extensions for the disposition-register output format. Stage 0 is new: a self-adversarial pre-pass that sharpens Stage 1 and strengthens the audit trail.
+
+### Stage 0 — Devil's advocate
+
+**Question**: What is the strongest argument that this finding is NOT a vulnerability?
+
+The agent generates a counter-argument before applying the rubric. This is not a skip gate — all five subsequent stages still run. The purpose is twofold:
+
+1. **Sharpen Stage 1**: a strong counter-argument gives Stage 1 a concrete hypothesis to test (is the path actually dead / test-only?) rather than an open-ended search.
+2. **Strengthen the audit trail**: a `true_positive` that explicitly refuted a counter-argument is more trustworthy than one that never examined the counter-case. A well-reasoned `false_positive` is more trustworthy than a silent discard.
+
+Counter-argument prompts:
+- **Framework/runtime protection**: does the tech stack have a built-in prevention for this class (ORM parameterization, template auto-escaping, TLS termination at the LB)?
+- **Trusted caller**: is this code only reachable from internal, trusted, or admin-only paths?
+- **Non-production context**: is the file a migration, test fixture, seed script, or utility that RECON's `entry_points` don't include?
+- **Rule pattern noise**: does this rule commonly fire on intentional non-exploitable configurations?
+
+Disposition rules:
+- Strong counter-argument → `da_strong: true`; Stage 1 tests the hypothesis
+- Weak / no counter-argument → `da_strong: false`; Stage 1 performs open-ended reachability search
+- `da_strong: true` + Stage 1 confirms (unreachable) → `false_positive`; both arguments cited in rationale
+- `da_strong: true` + Stage 1 disproves (reachable) → rejected counter-argument cited in `true_positive` rationale
 
 ### Stage 1 — Reachability
 
