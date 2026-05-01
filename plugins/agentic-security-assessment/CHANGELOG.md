@@ -1,5 +1,18 @@
 # Changelog
 
+## [2.2.0] (2026-05-01)
+
+
+### Features
+
+* **security-assessment:** add `recon-driven-scan` agent — bridges Phase 0 RECON narrative to concrete `file:line` evidence. Reads RECON's human-language risk descriptions and validates each described risk has matching code via targeted grep, finding patterns SAST cannot express (inverted-boolean TLS defaults, RCE shapes via expression libraries like Flee/Dynamic LINQ, header-driven SQL connection strings, body-trusted IDOR, masker exception PII fallback, format-preserving tokens). Includes a 28-pattern claim→search library covering unauth gRPC, TLS bypass, PII leak, crypto misuse, exception leak, SQL/code injection, SSRF, and DoS categories. Validated against the NextGen 2026-05-01 portfolio rerun: 12 repos previously scored zero-findings by SAST were re-scanned and produced 75 confirmed findings (8 CRITICAL, 17 HIGH) with zero false alarms. Notable additions the original SAST missed: 2 production SQL injections in `search-service`, RCE shape via Flee+Dynamic LINQ in `profile-custompipes`, inverted-boolean TLS bypass library-amplified across all consumer Lambdas in `notificationinfrastructure`, and expansion of the `Jupiter2020$` cross-repo credential reuse chain.
+* **security-assessment:** Phase 1b is now a 5-agent parallel dispatch — `security-review` + `business-logic-domain-review` (via security-review-adapter) + `deep-code-reasoning` + `authorization-logic-review` + `recon-driven-scan` (latter three emit unified-finding-v1 directly, appended via `jq`).
+
+
+### Documentation
+
+* **security-assessment:** Phase 1b parallelization rule, artifacts table, and exec-report agent→phase mapping all updated. Plugin-level CLAUDE.md agent registry updated 11 → 12.
+
 ## [2.1.0](https://github.com/bdfinst/agentic-dev-team/compare/agentic-security-assessment-v2.0.0...agentic-security-assessment-v2.1.0) (2026-04-27)
 
 

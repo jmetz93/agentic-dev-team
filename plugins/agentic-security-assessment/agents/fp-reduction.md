@@ -37,7 +37,22 @@ Run `command -v joern` (or its alias `joern-parse`). Set `register.reachability_
 
 If joern is present, invoke `tools/reachability.sh` to build or load the CPG. The helper returns a path to a JSON export of the CFG that Stage 1 queries.
 
-### 2. For each finding, apply stages 1–5 in order
+### 2. For each finding, apply stages 0–5 in order
+
+**Stage 0 — Devil's advocate.** Before running the structured rubric, generate the strongest argument that this finding is NOT a real vulnerability:
+
+- **Framework protection**: does the language/framework have a built-in prevention for this class? (e.g. ORM parameterization eliminates SQL injection at the repo layer; templating engines auto-escape XSS; TLS termination at the load balancer makes `verify=False` on internal-only calls a much narrower risk)
+- **Trusted caller**: is this code only reachable from a trusted internal caller, admin-only CLI, or test harness — never from an untrusted HTTP path?
+- **Non-production context**: is the file a migration, seed script, test fixture, or one-time utility that RECON's `entry_points` do not include?
+- **Rule pattern noise**: does this rule commonly fire on intentional, non-exploitable configurations (e.g. `node-tls-reject-unauthorized` on a local development server, `hardcoded-password` on a well-known public default)?
+
+Record the counter-argument (min 20 chars) in `da_rationale`. If the argument is strong enough that Stage 1 reachability analysis is likely to confirm the path is dead or test-only, set `da_strong: true`.
+
+**The devil's advocate does NOT change the verdict.** Stages 1–5 run regardless. What it changes is *how* Stage 1 operates and what appears in the audit trail:
+
+- `da_strong: true` → Stage 1 *tests the DA hypothesis* (is the path actually dead / test-only?) rather than performing an open-ended search. This sharpens the rationale and accelerates high-volume runs.
+- `da_strong: true` confirmed by Stage 1 (path dead or test-only) → `false_positive` with both the DA argument and the reachability evidence cited. The analyst sees a well-reasoned dismissal, not a silent discard.
+- `da_strong: true` *disproved* by Stage 1 (path is reachable) → the rejected DA argument appears in the final rationale. A `true_positive` that explicitly refuted a counter-argument is more trustworthy than one that never examined the counter-case.
 
 **Stage 1 — Reachability.** Populate `reachability.reachable` (bool) and `reachability.rationale` (min 20 chars). Set `reachability_source` per the detection mode (`joern-cpg` or `llm-fallback`).
 
@@ -109,6 +124,21 @@ Map the combined reachability + environment + control + scoring into one of:
 | test-only path OR strong in-repo control + score < 2 | `likely_false_positive` |
 | dead code OR schema-invalid finding | `false_positive` |
 
+### 4b. Assign confidence
+
+After assigning the verdict, derive a `confidence` field. This is a first-class output field on the disposition entry — consumed by the exec-report-generator for the dashboard Confidence column and Section 2 detail blocks.
+
+| Verdict | Exploitability score | Confidence |
+|---|---|---|
+| `true_positive` | 7–10 | `"high"` |
+| `true_positive` | 0–6 | `"medium"` |
+| `likely_true_positive` | any | `"medium"` |
+| `uncertain` | any | `"low"` |
+| `likely_false_positive` | any | `null` |
+| `false_positive` | any | `null` |
+
+`likely_false_positive` and `false_positive` entries are not surfaced in the exec report; they do not require a meaningful confidence value.
+
 ### 5. Emit
 
 Write both artifacts atomically (JSON validates against schema first, then MD writes — if JSON schema validation fails, abort without writing either).
@@ -132,6 +162,7 @@ Write both artifacts atomically (JSON validates against schema first, then MD wr
         "metadata": { "source": "semgrep", "confidence": "high" }
       },
       "verdict": "true_positive",
+      "confidence": "high",
       "reachability": {
         "reachable": true,
         "rationale": "Reached by HTTP handler /api/users via route -> service.getUser -> repo.find."
@@ -150,7 +181,7 @@ Write both artifacts atomically (JSON validates against schema first, then MD wr
 
 **Schema contract (enforced by `plugins/agentic-dev-team/knowledge/schemas/disposition-register-v1.json`):**
 
-- Each entry MUST contain `finding`, `verdict`, `reachability`, `reachability_source`, `exploitability`, `dispositioner`, `dispositioned_at`.
+- Each entry MUST contain `finding`, `verdict`, `confidence`, `reachability`, `reachability_source`, `exploitability`, `dispositioner`, `dispositioned_at`.
 - The `finding` sub-object MUST carry the full unified finding envelope at least `rule_id`, `file`, `line`, `severity`, `message`, `metadata`. Downstream consumers (`exec-report-generator`, `compliance-mapping`, `score.py`) access these as `entry.finding.<field>`.
 - A flat shape (with `rule_id`/`file`/`line` at the entry top level instead of nested) is schema-invalid and breaks downstream scorers and report generators. Always nest.
 - `reachability.rationale` and `exploitability.rationale` MUST each be ≥ 20 chars.
@@ -164,6 +195,8 @@ Before writing, validate the assembled object against the schema. If any require
 - One input finding → exactly one output entry. No dropping.
 - Every rationale ≥ 20 chars. No single-word justifications.
 - `reachability_source` is set on every entry. Register-level `reachability_tool` defaults, entries may override (mixed mode is allowed if some findings have CPG reachability and others fall back).
+- `confidence` is set on every entry per the verdict × score table in § 4b. `null` is permitted only for `likely_false_positive` and `false_positive` verdicts.
+- `da_rationale` is set on every entry (the Stage 0 counter-argument). `da_strong` is `true` or `false` on every entry.
 - If `reachability_source == "llm-fallback"` appears anywhere, the exec-report-generator will emit its fallback banner — this agent does not emit it directly.
 
 ## Handoff

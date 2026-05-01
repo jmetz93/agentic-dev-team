@@ -83,21 +83,29 @@ Phase 1: Tool-first detection  (parallel across tools)
   parallelism: all tool × target × ruleset combinations run concurrently
 
 Phase 1b: Judgment-layer detection  (parallel across agents)
-  agents:    security-review, business-logic-domain-review (opus both)
+  agents:    security-review, business-logic-domain-review, deep-code-reasoning,
+             authorization-logic-review, recon-driven-scan (opus all five)
   produces:  adds unified findings to memory/findings-<slug>.jsonl
   requires:  Phase 0, Phase 1
-  parallelism: two agents dispatched in a single Agent tool message,
+  parallelism: all five agents dispatched in a single Agent tool message,
                repeated per target
-  adapter:   The security-review agent's output is piped through
-             plugins/agentic-dev-team/skills/static-analysis-integration/adapters/security-review-adapter.py
-             before findings append to memory/findings-<slug>.jsonl.
-             The adapter is mandatory in this phase; a non-zero exit halts
-             Phase 1b with a named error (malformed category, missing
-             category, malformed mapping YAML, or schema-invalid emission).
-             Invocation, verbatim:
-               python3 plugins/agentic-dev-team/skills/static-analysis-integration/adapters/security-review-adapter.py \
-                 --input memory/agent-output-<slug>.json \
-                 --output memory/findings-<slug>.jsonl
+  adapters:
+    security-review + business-logic-domain-review:
+      Output is piped through the security-review adapter before appending:
+        python3 plugins/agentic-dev-team/skills/static-analysis-integration/adapters/security-review-adapter.py \
+          --input memory/agent-output-<slug>.json \
+          --output memory/findings-<slug>.jsonl
+      The adapter is mandatory for these two agents; a non-zero exit halts
+      Phase 1b with a named error.
+    deep-code-reasoning + authorization-logic-review + recon-driven-scan:
+      These agents emit unified-finding-v1 directly; no adapter is required.
+      Their outputs are appended via jq after all five agents complete:
+        jq -c '.[]' memory/deep-reasoning-<slug>.json   >> memory/findings-<slug>.jsonl
+        jq -c '.[]' memory/authz-review-<slug>.json     >> memory/findings-<slug>.jsonl
+        jq -c '.[]' memory/recon-driven-<slug>.json     >> memory/findings-<slug>.jsonl
+      Each must validate as an array (empty [] is valid; missing file is a Phase 1b failure).
+      recon-driven-scan emits [] when the RECON narrative is empty or generic; this
+      is normal and not a failure.
 
 Phase 1c: ACCEPTED-RISKS suppression (sequential gate, mandatory)
   procedure: scripts/apply-accepted-risks.sh parses the first fenced
@@ -243,6 +251,9 @@ Every phase writes to `memory/<kind>-<slug>.<ext>` where `<slug>` is derived fro
 |---|---|---|
 | `recon-<slug>.json` | Phase 0 | Phase 1, 1b, 2, 3, 5 |
 | `findings-<slug>.jsonl` | Phase 1, Phase 1b | Phase 2, 3 |
+| `deep-reasoning-<slug>.json` | Phase 1b (deep-code-reasoning) | Phase 1b append step |
+| `authz-review-<slug>.json` | Phase 1b (authorization-logic-review) | Phase 1b append step |
+| `recon-driven-<slug>.json` | Phase 1b (recon-driven-scan) | Phase 1b append step |
 | `disposition-<slug>.json` | Phase 2 | Phase 3, 5 |
 | `narratives-<slug>.md` | Phase 3 | Phase 5 |
 | `compliance-<slug>.json` | Phase 3 | Phase 5 |

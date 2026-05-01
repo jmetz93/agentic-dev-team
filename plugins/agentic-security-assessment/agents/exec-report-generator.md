@@ -54,7 +54,9 @@ Required content:
 
 ### Section 1 — Findings Dashboard
 
-One table, all findings (post-disposition), grouped by presentational severity. Columns: ID, Rule, File:Line, Category, Severity, Verdict.
+One table, all findings (post-disposition), grouped by presentational severity. Columns: ID, Rule, File:Line, Category, Severity, Verdict, Confidence.
+
+**Confidence column**: read directly from the disposition entry's `confidence` field (`high`, `medium`, `low`). Entries with `null` confidence (likely_false_positive / false_positive) are excluded from this table. Do not derive confidence independently — use the value the fp-reduction agent assigned.
 
 **CWE column format (dashboard):** Number(s) only — no name. Single: `CWE-NNN`. Multiple: `CWE-NNN + CWE-MMM`. Use `+` as the separator; never `/`.
 
@@ -64,6 +66,7 @@ Detailed blocks — one block per CRITICAL + HIGH finding. Each block contains:
 - Summary (one sentence)
 - Location (file:line)
 - CWE reference (invariant: every C/H finding must have CWE; see § Invariants)
+- **Confidence**: `High` / `Medium` — read from disposition entry's `confidence` field
 - Reachability trace (invariant: from disposition register's `reachability.rationale`)
 - Attack scenario (2-3 sentences)
 - Remediation guidance (2-4 sentences, specific)
@@ -120,7 +123,7 @@ Brief statement of what was and was not assessed. Explicit list of:
 | Agent type (from `tool_input.subagent_type`) | Phase |
 |---|---|
 | `codebase-recon` | phase-0-recon |
-| `security-review`, `business-logic-domain-review` | phase-1b-judgment |
+| `security-review`, `business-logic-domain-review`, `deep-code-reasoning`, `authorization-logic-review`, `recon-driven-scan` | phase-1b-judgment |
 | `fp-reduction` | phase-2-fp-reduction |
 | `tool-finding-narrative-annotator`, `compliance-edge-annotator` | phase-3-narrative-compliance |
 | `cross-repo-synthesizer` | phase-4-cross-repo (narrative sub-phase) |

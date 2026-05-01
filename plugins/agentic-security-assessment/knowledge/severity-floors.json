@@ -27,5 +27,38 @@
       "canonical_floor": 7,
       "rationale": "Administrative, management, or diagnostic endpoint reachable without authentication. Floor 7 regardless of the specific action exposed — any unauth admin surface is a pivot point."
     }
-  ]
+  ],
+  "confidence_bands": {
+    "description": "Informational mapping from (verdict, exploitability_score) to confidence label. Used by the fp-reduction agent when emitting the confidence field on disposition entries. NOT consulted by scripts/apply-severity-floors.sh — documentation only.",
+    "bands": [
+      {
+        "verdict": "true_positive",
+        "score_min": 7,
+        "score_max": 10,
+        "confidence": "high",
+        "note": "Reachable, no mitigation, high exploitability — analyst should prioritize"
+      },
+      {
+        "verdict": "true_positive",
+        "score_min": 0,
+        "score_max": 6,
+        "confidence": "medium",
+        "note": "Reachable but partial mitigation or lower exploitability"
+      },
+      {
+        "verdict": "likely_true_positive",
+        "score_min": 0,
+        "score_max": 10,
+        "confidence": "medium",
+        "note": "Reachable with compensating controls or partial evidence"
+      },
+      {
+        "verdict": "uncertain",
+        "score_min": 0,
+        "score_max": 10,
+        "confidence": "low",
+        "note": "Reachable path with strong mitigation, or insufficient evidence to confirm"
+      }
+    ]
+  }
 }

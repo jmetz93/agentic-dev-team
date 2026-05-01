@@ -82,11 +82,14 @@ See `install.sh`. It performs four checks:
 | `/redteam-model <target>` | orchestrator | Adversarial ML red-team probes against a self-owned target |
 | `/export-pdf <report.md>` | worker | PDF export via pandoc/weasyprint |
 
-**Agents** (9 opus):
-- `fp-reduction` (opus) — 5-stage FP-reduction rubric; disposition register
+**Agents** (12 opus):
+- `fp-reduction` (opus) — 6-stage FP-reduction rubric (Stage 0 devil's advocate + Stages 1–5); disposition register with confidence field
 - `business-logic-domain-review` (opus) — fraud-domain anti-patterns
+- `deep-code-reasoning` (opus) — RECON surface-scoped freeform vulnerability reasoning; novel context-dependent issues beyond static rules
+- `authorization-logic-review` (opus) — top-down authorization architecture review; policy declaration vs. enforcement gaps, multi-tenancy isolation
+- `recon-driven-scan` (opus) — bridges RECON narrative claims to concrete file:line evidence; finds patterns SAST cannot express (inverted-boolean TLS defaults, RCE shapes via expression libraries, header-driven SQL, body-trusted IDOR)
 - `cross-repo-synthesizer` (opus) — named attack chains across repos
-- `exec-report-generator` (opus) — publication-ready executive report
+- `exec-report-generator` (opus) — publication-ready executive report with Confidence column
 - `redteam-recon-analyzer` (opus) — interpretation of probe 01
 - `redteam-evasion-analyzer` (opus) — interpretation of probes 03/04/05
 - `redteam-extraction-analyzer` (opus) — interpretation of probe 07
