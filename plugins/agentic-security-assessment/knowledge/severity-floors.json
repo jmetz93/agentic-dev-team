@@ -5,29 +5,55 @@
     {
       "class": "hardcoded-creds",
       "canonical_floor": 9,
-      "rationale": "Credential (password, API key, token) embedded in source. Atomic exposure with no practical mitigation once committed; every historical commit must be rotated. Floor-to-CRITICAL regardless of reachability or compensating controls."
+      "discriminator": "production-reachable",
+      "rationale": "Credential (password, API key, token) embedded in source AND production-reachable. Atomic exposure with no practical mitigation once committed. Floor-to-CRITICAL. Calibrated against opus_repo_scan_test S01-FS-01 (AWS production keys → CRITICAL) and X-01 (shared JWT secret → CRITICAL). Dev/test-only fallbacks like `fallback-secret-for-dev` should be tagged with discriminator `dev-only-fallback` and floor 7 (HIGH); see reference S01-AG-03."
     },
     {
       "class": "weak-crypto",
       "canonical_floor": 5,
-      "rationale": "Broken/weak cryptographic primitives (MD5/SHA-1 for integrity, DES/3DES, ECB-mode ciphers), disabled integrity checks, or predictable IVs. Default floor 5; exploitability context (reachability, key material sensitivity) can raise it further via the rationale's `floor=<n>` value."
+      "rationale": "Broken/weak cryptographic primitives (MD5/SHA-1 for integrity, DES/3DES, ECB-mode ciphers), disabled integrity checks, or predictable IVs. Floor 5-6 → HIGH range. Reference: S07-FS-03 (MD5 integrity), S07-FS-05 (AES-CBC w/o HMAC) → HIGH not CRITICAL."
     },
     {
       "class": "tls-disabled",
       "canonical_floor": 7,
-      "rationale": "Plaintext transport or cert-validation disabled on a reachable endpoint. Default floor 7; 5 for internal-only endpoints where the rationale explicitly narrows the scope."
+      "rationale": "Plaintext transport or cert-validation disabled on a reachable endpoint. Floor 7 → HIGH (post-2026-05-01 calibration). Reference: X-06 (TLS verification disabled across egress paths) explicitly downgraded from CRITICAL to HIGH on cross-repo consolidation — exploitation requires MITM positioning. Internal-only endpoints can use floor 5."
     },
     {
       "class": "info-leak-unauth",
       "canonical_floor": 5,
-      "rationale": "Unauthenticated information disclosure (stack traces, internal paths, internal IDs). Default floor 5. Often over-flagged on intentional trace-correlation headers; the fp-reduction agent can suppress via the `floor=<n> suppressed to <m>` phrase when the leak is by design."
+      "rationale": "Unauthenticated information disclosure (stack traces, internal paths, internal IDs). Default floor 5 → HIGH. Often over-flagged on intentional trace-correlation headers; the fp-reduction agent can suppress via the `floor=<n> suppressed to <m>` phrase when the leak is by design."
     },
     {
       "class": "unauth-admin-endpoint",
-      "canonical_floor": 7,
-      "rationale": "Administrative, management, or diagnostic endpoint reachable without authentication. Floor 7 regardless of the specific action exposed — any unauth admin surface is a pivot point."
+      "canonical_floor": 9,
+      "discriminator": "direct-privilege-escalation",
+      "rationale": "Administrative endpoint reachable without authentication AND enabling direct privileged action (privilege escalation, model swap, cache flush, token mint, fraud bypass). Floor 9 → CRITICAL. Reference: S02-FS-01 (`/admin/reload-model`) and S02-AG-01 (unauth admin-token mint) → CRITICAL. Endpoints exposing only info-disclosure or DoS (e.g. `/actuator/heap`, `/predict` without privilege escalation) should use discriminator `info-disclosure-only` with floor 7 (HIGH). Reference calibration: 'unauth admin endpoint = CRITICAL when privilege escalation, HIGH otherwise'."
+    },
+    {
+      "class": "fail-open-scoring",
+      "canonical_floor": 9,
+      "rationale": "Fraud scorer falls open on exception, bypassing on every request. Reference: S03-FS-01 → CRITICAL."
+    },
+    {
+      "class": "emulation-bypass",
+      "canonical_floor": 9,
+      "rationale": "Production short-circuit via env var or header without allowlist. Reference: S03-FS-02 (EMULATION_MODE) → CRITICAL."
+    },
+    {
+      "class": "client-controlled-aggregate",
+      "canonical_floor": 9,
+      "rationale": "Attacker controls aggregate features the model reads on every prediction. Reference: S03-FS-03/04 (`velocity_24h`, `count_last_1h`) → CRITICAL."
     }
   ],
+  "score_to_severity": {
+    "description": "Calibrated 2026-05-01 against opus_repo_scan_test reference. CRITICAL = exploitable immediately with no prerequisites; HIGH = exploitable with moderate effort. Earlier `score >= 7 → CRITICAL` produced an inverted pyramid; tightening to `score >= 9` aligns the distribution.",
+    "thresholds": [
+      { "min_score": 9, "severity": "CRITICAL", "criteria": "Exploitable immediately with no prerequisites; data breach or fraud bypass" },
+      { "min_score": 6, "severity": "HIGH",     "criteria": "Exploitable with moderate effort; significant financial or data impact" },
+      { "min_score": 3, "severity": "MEDIUM",   "criteria": "Requires insider access, specific configuration, or additional vulnerabilities" },
+      { "min_score": 0, "severity": "LOW",      "criteria": "Informational; defense-in-depth; negligible impact in isolation" }
+    ]
+  },
   "confidence_bands": {
     "description": "Informational mapping from (verdict, exploitability_score) to confidence label. Used by the fp-reduction agent when emitting the confidence field on disposition entries. NOT consulted by scripts/apply-severity-floors.sh — documentation only.",
     "bands": [
