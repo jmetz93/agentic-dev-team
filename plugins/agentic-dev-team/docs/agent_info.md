@@ -16,7 +16,7 @@ Each team agent file in `agents/` specifies a role's persona, behavior, collabor
 | Product Manager | [`product-manager.md`](../agents/product-manager.md) | Requirements clarification, prioritization, stakeholder alignment |
 | Technical Writer | [`tech-writer.md`](../agents/tech-writer.md) | Documentation, terminology consistency, style enforcement |
 | Security Engineer | [`security-engineer.md`](../agents/security-engineer.md) | Security analysis, threat modeling, compliance |
-| DevOps/SRE Engineer | [`devops-sre-engineer.md`](../agents/devops-sre-engineer.md) | Pipeline, deployment, reliability, observability |
+| Platform Engineer | [`platform-engineer.md`](../agents/platform-engineer.md) | Pipeline, deployment, reliability, observability |
 | ADR Author | [`adr.md`](../agents/adr.md) | Creates and manages Architecture Decision Records |
 | Codebase Recon | [`codebase-recon.md`](../agents/codebase-recon.md) | Surveys a codebase's structure, entry points, dependencies, security surface, and git history; produces a RECON artifact in `memory/` that other agents consume |
 

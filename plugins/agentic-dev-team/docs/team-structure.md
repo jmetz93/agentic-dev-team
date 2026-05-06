@@ -4,7 +4,7 @@ This document is a visual index of the agent team. For behavioral details of eac
 
 ## Team Agents
 
-![Org chart showing the Orchestrator at the top, dispatching to eleven team agents: Software Engineer, QA Engineer, UI/UX Designer, Architect, Product Manager, Technical Writer, Security Engineer, DevOps/SRE Engineer, ADR Author, and Codebase Recon.](diagrams/team-agents.svg)
+![Org chart showing the Orchestrator at the top, dispatching to eleven team agents: Software Engineer, QA Engineer, UI/UX Designer, Architect, Product Manager, Technical Writer, Security Engineer, Platform Engineer, ADR Author, and Codebase Recon.](diagrams/team-agents.svg)
 
 The Orchestrator sits at the root and routes every request to one or more of the eleven team agents based on task classification. Only the Orchestrator spans phases; the other agents are loaded on demand when their phase begins and unloaded via summarization before the next phase starts. Full roster: [Agents → Team Agents](agent_info.md#team-agents).
 

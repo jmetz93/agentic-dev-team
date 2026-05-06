@@ -14,9 +14,9 @@ This file contains the complete registry tables. CLAUDE.md references this file 
 | Product Manager | `agents/product-manager.md` | 300 | Requirements, prioritization |
 | Technical Writer | `agents/tech-writer.md` | 560 | Documentation, style consistency |
 | Security Engineer | `agents/security-engineer.md` | 320 | Security analysis, threat modeling |
-| DevOps/SRE Engineer | `agents/devops-sre-engineer.md` | 320 | Pipeline, deployment, reliability |
+| Platform Engineer | `agents/platform-engineer.md` | 320 | Pipeline, deployment, reliability |
 | ADR Author | `agents/adr.md` | 320 | Creates and manages Architecture Decision Records |
-| Codebase Recon | `agents/codebase-recon.md` | ~900 | Repo reconnaissance — surfaces entry points, dependencies, security surface, git history. Produces RECON artifact per security-primitives-contract. Dispatched at the start of `/security-assessment` and on demand by architect / domain-analysis. |
+| Codebase Recon | `agents/codebase-recon.md` | ~900 | Repo reconnaissance — surfaces entry points, dependencies, security surface, git history. Produces RECON artifact per security-primitives-contract. Dispatched on demand by architect and domain-analysis. |
 | **All team agents** | | **~4,510** | |
 
 ## Review Agents
@@ -67,13 +67,11 @@ Skills are reusable knowledge modules in `.claude/skills/` that agents reference
 | API Design | `skills/api-design/SKILL.md` | 600 | Architect, Software Engineer |
 | Legacy Code | `skills/legacy-code/SKILL.md` | 700 | Software Engineer, QA Engineer, Architect |
 | Mutation Testing | `skills/mutation-testing/SKILL.md` | 700 | QA Engineer, Software Engineer |
-
-
 | Test-Driven Development | `skills/test-driven-development/SKILL.md` | 600 | Software Engineer, QA Engineer, Orchestrator |
 | Systematic Debugging | `skills/systematic-debugging/SKILL.md` | 600 | Software Engineer, QA Engineer |
 | Design Doc | `skills/design-doc/SKILL.md` | 500 | Architect, Product Manager, Orchestrator |
 | Branch Workflow | `skills/branch-workflow/SKILL.md` | 450 | Orchestrator, Software Engineer |
-| CI Debugging | `skills/ci-debugging/SKILL.md` | 550 | DevOps/SRE Engineer, Software Engineer, QA Engineer |
+| CI Debugging | `skills/ci-debugging/SKILL.md` | 550 | Platform Engineer, Software Engineer, QA Engineer |
 | Test Design Reviewer | `skills/test-design-reviewer/SKILL.md` | 600 | QA Engineer, test-review |
 | Browser Testing | `skills/browser-testing/SKILL.md` | 700 | QA Engineer |
 | Competitive Analysis | `skills/competitive-analysis/SKILL.md` | 600 | Orchestrator, Product Manager |
@@ -81,9 +79,9 @@ Skills are reusable knowledge modules in `.claude/skills/` that agents reference
 | Design It Twice | `skills/design-it-twice/SKILL.md` | 550 | Architect, Software Engineer |
 | Static Analysis Integration | `skills/static-analysis-integration/SKILL.md` | 650 | Orchestrator, `/code-review` |
 | Feature File Validation | `skills/feature-file-validation/SKILL.md` | 700 | test-review, QA Engineer, spec-compliance-review |
-| Docker Image Create | `skills/docker-image-create/SKILL.md` | 800 | DevOps/SRE Engineer, Software Engineer |
-| Docker Image Audit | `skills/docker-image-audit/SKILL.md` | 750 | Orchestrator (inline review), DevOps/SRE Engineer, Security Engineer |
-| Performance Benchmark | `skills/performance-benchmark/SKILL.md` | 800 | QA Engineer, DevOps/SRE Engineer, `/benchmark` command |
+| Docker Image Create | `skills/docker-image-create/SKILL.md` | 800 | Platform Engineer, Software Engineer |
+| Docker Image Audit | `skills/docker-image-audit/SKILL.md` | 750 | Orchestrator (inline review), Platform Engineer, Security Engineer |
+| Performance Benchmark | `skills/performance-benchmark/SKILL.md` | 800 | QA Engineer, Platform Engineer, `/benchmark` command |
 
 ## Subagent Prompt Templates
 

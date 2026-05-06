@@ -52,6 +52,7 @@ Used during the Research phase to explore alternatives and stress-test designs:
 
 | Skill | File | Purpose |
 | --- | --- | --- |
+| Domain Analysis | [`domain-analysis/SKILL.md`](../skills/domain-analysis/SKILL.md) | Strategic DDD health assessment of an existing system: bounded contexts, context map, event flows, friction report |
 | Competitive Analysis | [`competitive-analysis.md`](../skills/competitive-analysis/SKILL.md) | Gap analysis against external tools, plugins, or feature sets |
 | Design Interrogation | [`design-interrogation.md`](../skills/design-interrogation/SKILL.md) | Stress-test design decisions before planning |
 | Design It Twice | [`design-it-twice.md`](../skills/design-it-twice/SKILL.md) | Generate parallel alternative interfaces via sub-agents |
@@ -154,10 +155,33 @@ Each team agent is exposed as a user-invocable slash command that adopts the age
 | `/software-engineer` | [`software-engineer.md`](../commands/software-engineer.md) | Full-stack development, code generation, implementation, and refactoring |
 | `/qa-engineer` | [`qa-engineer.md`](../commands/qa-engineer.md) | ATDD test generation, quality metrics, regression testing |
 | `/security-engineer` | [`security-engineer.md`](../commands/security-engineer.md) | Threat modeling, security analysis, vulnerability assessment |
-| `/devops-sre-engineer` | [`devops-sre-engineer.md`](../commands/devops-sre-engineer.md) | Pipeline, deployment, observability, reliability planning |
+| `/platform-engineer` | [`platform-engineer.md`](../commands/platform-engineer.md) | Pipeline, deployment, observability, reliability planning |
 | `/ui-ux-designer` | [`ui-ux-designer.md`](../commands/ui-ux-designer.md) | UI patterns, UX optimization, accessibility compliance |
 | `/product-manager` | [`product-manager.md`](../commands/product-manager.md) | Feature scoping, prioritization, stakeholder alignment |
 | `/tech-writer` | [`tech-writer.md`](../commands/tech-writer.md) | Documentation, terminology consistency, style enforcement |
+
+### Skill Commands
+
+Each skill is also a user-invocable slash command. These adopt the skill directly, without a team agent persona wrapper. Useful for targeted invocation outside of the full orchestration pipeline.
+
+| Command | File | Purpose |
+| --- | --- | --- |
+| `/specs` | [`specs.md`](../commands/specs.md) | Collaborative spec workflow: Intent, BDD scenarios, Architecture notes, Acceptance Criteria |
+| `/threat-modeling` | [`threat-modeling.md`](../commands/threat-modeling.md) | STRIDE analysis for new APIs, auth changes, or data flows |
+| `/hexagonal-architecture` | [`hexagonal-architecture.md`](../commands/hexagonal-architecture.md) | Ports-and-adapters design for separating domain from infrastructure |
+| `/domain-driven-design` | [`domain-driven-design.md`](../commands/domain-driven-design.md) | Bounded contexts, aggregates, context mapping |
+| `/domain-analysis` | [`domain-analysis.md`](../commands/domain-analysis.md) | Assess DDD health: bounded contexts, context map, friction report |
+| `/api-design` | [`api-design.md`](../commands/api-design.md) | Contract-first API design, versioning, REST conventions |
+| `/legacy-code` | [`legacy-code.md`](../commands/legacy-code.md) | Characterization tests and safe refactoring in untested code |
+| `/mutation-testing` | [`mutation-testing.md`](../commands/mutation-testing.md) | Run mutation tool and triage surviving mutants |
+| `/governance-compliance` | [`governance-compliance.md`](../commands/governance-compliance.md) | Audit logging, quality gates, ethics escalation |
+| `/feedback-learning` | [`feedback-learning.md`](../commands/feedback-learning.md) | Process amend/learn/remember/forget keywords |
+| `/context-loading-protocol` | [`context-loading-protocol.md`](../commands/context-loading-protocol.md) | Select minimum viable context load for a task |
+| `/context-summarization` | [`context-summarization.md`](../commands/context-summarization.md) | Compress conversation history at utilization threshold |
+| `/performance-metrics` | [`performance-metrics.md`](../commands/performance-metrics.md) | Log task completion data to metrics/ |
+| `/quality-gate-pipeline` | [`quality-gate-pipeline.md`](../commands/quality-gate-pipeline.md) | Run self-validation, verification evidence, and review-correction loop |
+| `/human-oversight-protocol` | [`human-oversight-protocol.md`](../commands/human-oversight-protocol.md) | Invoke approval gates, respond to intervention commands |
+| `/agent-skill-authoring` | [`agent-skill-authoring.md`](../commands/agent-skill-authoring.md) | Guidance for creating and maintaining agent and skill files |
 
 ### Utility Commands
 

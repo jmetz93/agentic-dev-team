@@ -33,7 +33,7 @@ These are the measured sizes of each loadable file. CLAUDE.md is always loaded a
 | Product Manager | `agents/product-manager.md` | 300 |
 | Technical Writer | `agents/tech-writer.md` | 560 |
 | Security Engineer | `agents/security-engineer.md` | 320 |
-| DevOps/SRE Engineer | `agents/devops-sre-engineer.md` | 320 |
+| Platform Engineer | `agents/platform-engineer.md` | 320 |
 
 ### Skills
 
