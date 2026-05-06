@@ -1,5 +1,12 @@
 # Changelog
 
+## [5.1.1](https://github.com/bdfinst/agentic-dev-team/compare/agentic-dev-team-v5.1.0...agentic-dev-team-v5.1.1) (2026-05-06)
+
+
+### Code Refactoring
+
+* rename devops-sre-engineer to platform-engineer and fix doc drift ([9d63904](https://github.com/bdfinst/agentic-dev-team/commit/9d6390466a92a3162b086210e5c4b5a0d2dc08e7))
+
 ## [5.1.0](https://github.com/bdfinst/agentic-dev-team/compare/agentic-dev-team-v5.0.0...agentic-dev-team-v5.1.0) (2026-04-27)
 
 
