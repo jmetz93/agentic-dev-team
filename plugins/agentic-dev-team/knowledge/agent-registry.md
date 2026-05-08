@@ -110,6 +110,7 @@ Knowledge files in `knowledge/` provide progressive disclosure — agents read t
 | OWASP Detection | `knowledge/owasp-detection.md` | 600 | security-review |
 | Domain Modeling | `knowledge/domain-modeling.md` | 500 | domain-review |
 | Architecture Assessment | `knowledge/architecture-assessment.md` | 450 | arch-review |
+| Exploratory Testing Field Guide | `knowledge/exploratory-testing-field-guide.md` | ~900 | QA Engineer, `skills/exploratory-testing/SKILL.md` |
 
 ## Agent Templates
 
